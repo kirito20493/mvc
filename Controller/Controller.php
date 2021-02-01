@@ -5,19 +5,16 @@ class controller{
         $controller = isset($_GET['controller'])?$_GET['controller']:'login';
         switch ($controller){
             case 'login';
-                // include 'LoginController.php';
+                // include 'index.php?controller=login';
                 $this->loginController();
                 break;
             case 'register';
-                // include 'RegisterController.php';
                 $this->registerController();
                 break;
             case 'home';
-                // include 'RegisterController.php';
                 $this->homeController();
                 break;
             default;
-                // include 'LoginController.php';
                 $this->loginController();
                 break;
         }
@@ -38,7 +35,6 @@ class controller{
                 $data = $result->fetch_assoc();
                 if ($data['username'] == $username && $data['password'] == $password){
                     header('Location: index.php?controller=home');
-                    // echo "aloooo";
                 } else {
                     $error['password'] = "Tài khoản hoặc Mật khẩu không chính xác!";
                 }
@@ -50,33 +46,36 @@ class controller{
 
     // REGISTER
     public function registerController(){
-        
         include './lib/validate.php';
+        $model = new UserModel();
         if (isset($_POST['register'])){
             $error = array();
             //validate UserName
-            if (empty($_POST['username'])) {
-                $error['username'] = 'bạn cần nhập username';
-            } else {
-                if(!isUserName($_POST['username'])) {
-                     $error['username'] = 'Username không đúng định dạng!'; 
-                }else {
-                    $username = $_POST['username'];
-                }
+            if (!checkEmptyUserName($_POST['username'])){
+                $error['username'] = "Bạn chưa nhập tài khoản! Vui lòng nhập!";
             }
+            if(!$model->checkIssetUser($_POST['username'])){
+                $error['username'] = "Tài khoản này đã tồn tại! Vui lòng chọn tài khoản khác!";
+            }
+            if(!isUserName($_POST['username'])) {
+                $error['username'] = 'Username không đúng định dạng!'; 
+            }else{
+                $username = $_POST['username'];
+            }
+            
             // Validate Password
-            if (empty($_POST['password'])) {
-                $error['password'] = 'bạn cần nhập password ';
-            } else {
-                if(!isPassWord($_POST['password'])) {
-                    $error['password'] = 'PassWord phải gôm chữ + số và không có ký tự trống!'; 
-                }else {
-                    $password = $_POST['password'];
-                }
+            if (!checkEmptyPassword($_POST['password'])) {
+                $error['password'] = 'bạn cần nhập password!';
+            } 
+            if(!isPassWord($_POST['password'])) {
+                $error['password'] = 'PassWord phải gôm chữ + số và không có ký tự trống!'; 
+            }else{
+                $password = $_POST['password'];
             }
+            
             // validate Password-confirmation
             if (empty($_POST['password_confirmation'])) {
-                $error['password_confirmation'] = 'bạn cần nhập lại password ';
+                $error['password_confirmation'] = 'bạn cần nhập password-congirmation ';
             } else {
                 if ($_POST['password_confirmation'] != $_POST['password']) {
                     $error['password_confirmation'] = 'Mật khẩu nhập lại không chính xác! Vui lòng nhập lại!';
@@ -97,9 +96,7 @@ class controller{
                     $sendMail = sendMail($email,$username,$password);
                 }
             }
-
             if(empty($error)) {
-                
                 $model = new UserModel();
                 $result = $model->adduser($username,$password,$email);
                 if($result === TRUE){

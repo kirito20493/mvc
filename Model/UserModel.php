@@ -16,6 +16,15 @@ class UserModel extends DBConnect{
         $result = mysqli_query($this->connect(),$sql);
         return $result;
     }
-
+    //check isset Username
+    function checkIssetUser($username){
+        $sql = "SELECT * FROM user WHERE username='$username'";
+        $result = mysqli_query($this->connect(),$sql);
+        if(mysqli_num_rows($result) > 0) {
+            return false;
+        } else {
+            return true;
+        }
+    }
 }
 ?>

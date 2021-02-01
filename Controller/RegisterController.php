@@ -1,5 +1,5 @@
 <?php
-class registerController
+class RegisterController
 {
     //Loading REGISTER Controller
     public function registerController()

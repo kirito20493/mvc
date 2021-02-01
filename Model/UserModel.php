@@ -26,5 +26,15 @@ class UserModel extends DBConnect{
             return true;
         }
     }
+    //check isset email
+    function checkIssetEmail($email){
+        $sql = "SELECT * FROM user WHERE email='$email'";
+        $result = mysqli_query($this->connect(),$sql);
+        if(mysqli_num_rows($result) > 0) {
+            return false;
+        } else {
+            return true;
+        }
+    }
 }
 ?>

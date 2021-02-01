@@ -83,11 +83,13 @@ class controller{
                     $password_confirmation = $_POST['password_confirmation'];
                 }
             }
-
             //send mail
             if (empty($_POST['email'])) {
                 $error['email'] = 'bạn cần nhập email ';
             } else {
+                if(!$model->checkIssetEmail($_POST['email'])){
+                    $error['email'] = "Email này đã tồn tại! Vui lòng chọn Email khác!";
+                }
                 if (!filter_var($_POST['email'], FILTER_VALIDATE_EMAIL)) {
                     $error['email'] = "Email không đúng định dạng!";
                 }else {

@@ -6,7 +6,11 @@
         <div class="form-group">
             <label for="username" class="form-label">Tài khoản</label>
             <input id="username" name="username" type="text" placeholder="abc123" class="form-control" value="">
-            <span class="form-message" style="color:red"></span>
+            <?php
+                if(isset($error['username'])){
+            ?>
+            <span class="form-message" style="color:red"><?php echo $error['username'];?></span>
+            <?php }?>
         </div>
 
         <div class="form-group">

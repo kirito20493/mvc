@@ -1,5 +1,4 @@
 <div class="main">
-    
         <form action="index.php?controller=register" method="POST" class="form" id="form-1" enctype="multipart/form-data">
             <h3 class="heading">Đăng ký thành viên</h3>
             <div class="spacer"></div>

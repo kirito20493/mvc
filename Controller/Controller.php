@@ -1,42 +1,51 @@
 <?php
-include './Model/UserModel.php';
-class controller{
-    public function handleRequest(){
+require './Model/UserModel.php';
+session_start();
+class controller
+{
+    public function handleRequest()
+    {
         $controller = isset($_GET['controller'])?$_GET['controller']:'login';
         switch ($controller){
-            case 'login';
-                // include 'index.php?controller=login';
-                $this->loginController();
-                break;
-            case 'register';
-                $this->registerController();
-                break;
-            case 'home';
-                $this->homeController();
-                break;
-            default;
-                $this->loginController();
-                break;
+        case 'login';
+            $this->loginController();
+            break;
+        case 'register';
+            $this->registerController();
+            break;
+        case 'home';
+            $this->homeController();
+            break;
+        default;
+            $this->loginController();
+            break;
         }
     }
 
 
-    // LOGIN
-    public function loginController(){
-        if (isset($_POST['login'])){
+    //Loading LOGIN Controller
+    public function loginController()
+    {
+        $model = new UserModel();
+        if (isset($_POST['login'])) {
             $error = array();
-            if (empty($_POST['username']) || empty($_POST['password'])){
+            if (empty($_POST['username']) || empty($_POST['password'])) {
                 $error['password'] = 'Tài khoản hoặc Mật khẩu không được bỏ trống, Vui lòng nhập!';
+            } 
+            if ($model->checkIssetUser($_POST['username']) === TRUE) {
+                $error['username'] = "Tài khoản này không tồn tại!";
             } else {
                 $username = $_POST['username'];
                 $password = $_POST['password'];
-                $model = new UserModel();
-                $result = $model->checkLogin($username,$password);
+                $result = $model->checkLogin($username, $password);
                 $data = $result->fetch_assoc();
-                if ($data['username'] == $username && $data['password'] == $password){
+                if ($data['username'] == $username && $data['password'] == $password) {
+                    $_SESSION['username'] = $data['username'];
+                    $_SESSION['password'] = $data['password'];
+                    $_SESSION['email'] = $data['email'];
                     header('Location: index.php?controller=home');
                 } else {
-                    $error['password'] = "Tài khoản hoặc Mật khẩu không chính xác!";
+                    $error['password'] = "Mật khẩu không chính xác!";
                 }
             }
         }
@@ -44,17 +53,18 @@ class controller{
     }
 
 
-    // REGISTER
-    public function registerController(){
+    //Loading REGISTER Controller
+    public function registerController()
+    {
         include './lib/validate.php';
         $model = new UserModel();
-        if (isset($_POST['register'])){
+        if (isset($_POST['register'])) {
             $error = array();
             //validate UserName
-            if (!checkEmptyUserName($_POST['username'])){
+            if (!checkEmptyUserName($_POST['username'])) {
                 $error['username'] = "Bạn chưa nhập tài khoản! Vui lòng nhập!";
             }
-            if(!$model->checkIssetUser($_POST['username'])){
+            if(!$model->checkIssetUser($_POST['username'])) {
                 $error['username'] = "Tài khoản này đã tồn tại! Vui lòng chọn tài khoản khác!";
             }
             if(!isUserName($_POST['username'])) {
@@ -83,11 +93,11 @@ class controller{
                     $password_confirmation = $_POST['password_confirmation'];
                 }
             }
-            //send mail
+            //validate Email
             if (empty($_POST['email'])) {
                 $error['email'] = 'bạn cần nhập email ';
             } else {
-                if(!$model->checkIssetEmail($_POST['email'])){
+                if(!$model->checkIssetEmail($_POST['email'])) {
                     $error['email'] = "Email này đã tồn tại! Vui lòng chọn Email khác!";
                 }
                 if (!filter_var($_POST['email'], FILTER_VALIDATE_EMAIL)) {
@@ -95,27 +105,94 @@ class controller{
                 }else {
                     $email = $_POST['email'];
                     include './lib/sendMail.php';
-                    $sendMail = sendMail($email,$username,$password);
+                    $sendMail = sendMail($email, $username, $password);
                 }
             }
             if(empty($error)) {
                 $model = new UserModel();
-                $result = $model->adduser($username,$password,$email);
-                if($result === TRUE){
+                $result = $model->adduser($username, $password, $email);
+                if($result === true) {
                     $sendMail->send();
                     $sendMail->smtpClose();
                     header('Location: index.php?controller=login');
-                }
-                
+                }   
             }
-
         }
         include './View/register.php';
     }
-
-    // Home
-    public function homeController(){
-        include './View/home.php';
+    // Loading HOME Controller
+    public function homeController()
+    {
+        include './lib/validate.php';
+        $action = isset($_GET['action'])?$_GET['action']:'index';
+        $model = new UserModel();
+        $error = array();
+        switch ($action) {
+            case 'index':
+                if(isset($_SESSION['username']) && isset($_SESSION['password'])){
+                    include './View/home/index.php';
+                } else {
+                    header('Location: index.php?controller=login');
+                }
+                break;
+            case 'logout':
+                session_destroy();
+                header('Location: index.php?controller=login');
+                break;
+            case 'changePass':
+                if (isset($_POST['changePassword'])){
+                    if (empty($_POST['passwordOld'])) {
+                        $error['passwordOld'] = "Không được để trống!";
+                        // echo "nguu";
+                    } elseif ($_POST['passwordOld'] != $_SESSION['password']) {
+                        $error['passwordOld'] = "Mật khẩu không chính xác!";
+                    }
+                    if (empty($_POST['password'])) {
+                        $error['password'] = "Không được để trống!";
+                    } elseif (!isPassWord($_POST['password'])) {
+                        $error['password'] = 'PassWord phải gồm chữ + số và không có ký tự trống!'; 
+                    } else {
+                        $password = $_POST['password'];
+                    }
+                    if (empty($_POST['password-confirmation'])) {
+                        $error['password-confirmation'] = "Không được để trống!";
+                    } elseif ($_POST['password-confirmation'] != $_POST['password']) {
+                        $error['password-confirmation'] = "Mật khẩu nhập lại không chính xác!";
+                    }
+                    // gọi hàm thay đổi mật khẩu từ UserModel
+                    if (empty($error)){
+                        $result = $model->changePassword($_SESSION['username'],$password);
+                        $_SESSION['password'] = $password;
+                        header('Location: index.php?controller=home');
+                    }
+                }
+                include './View/home/changePassword.php';
+                break;
+            case 'changeEmail':
+                if (isset($_POST['changeEmail'])) {
+                    if (empty($_POST['email'])){
+                        $error['email'] = "Không được để trống!";
+                    } elseif(!$model->checkIssetEmail($_POST['email'])) {
+                        $error['email'] = "Email này đã tồn tại! Vui lòng chọn Email khác!";
+                    } elseif (!filter_var($_POST['email'], FILTER_VALIDATE_EMAIL)) {
+                        $error['email'] = "Email không đúng định dạng!";
+                    } else {
+                        $email = $_POST['email'];
+                    }
+                    if (empty($_POST['password'])) {
+                        $error['password'] = "Không được để trống!";
+                    } elseif ($_POST['password'] != $_SESSION['password']) {
+                        $error['password'] = "Mật khẩu không chính xác!";
+                    }
+                    if (empty($error)){
+                        $model->changeEmail($_SESSION['username'],$_SESSION['password'],$email);
+                        $_SESSION['email'] = $email;
+                        header('Location: index.php?controller=home');
+                    }
+                }
+                include './View/home/changeEmail.php';
+                break;
+        }
     }
 }
 ?>

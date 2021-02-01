@@ -3,6 +3,7 @@ require './Model/UserModel.php';
 session_start();
 class controller
 {
+    // Hàm điều hướng Controller
     public function handleRequest()
     {
         $controller = isset($_GET['controller'])?$_GET['controller']:'login';
@@ -128,6 +129,7 @@ class controller
         $model = new UserModel();
         $error = array();
         switch ($action) {
+            // trang home show thông tin User
             case 'index':
                 if(isset($_SESSION['username']) && isset($_SESSION['password'])){
                     include './View/home/index.php';
@@ -135,15 +137,16 @@ class controller
                     header('Location: index.php?controller=login');
                 }
                 break;
+            // Đăng xuất tài khoản và Xoá Session
             case 'logout':
                 session_destroy();
                 header('Location: index.php?controller=login');
                 break;
+            // thay đổi mật khẩu
             case 'changePass':
                 if (isset($_POST['changePassword'])){
                     if (empty($_POST['passwordOld'])) {
                         $error['passwordOld'] = "Không được để trống!";
-                        // echo "nguu";
                     } elseif ($_POST['passwordOld'] != $_SESSION['password']) {
                         $error['passwordOld'] = "Mật khẩu không chính xác!";
                     }
@@ -168,6 +171,7 @@ class controller
                 }
                 include './View/home/changePassword.php';
                 break;
+            // thay đổi Email
             case 'changeEmail':
                 if (isset($_POST['changeEmail'])) {
                     if (empty($_POST['email'])){

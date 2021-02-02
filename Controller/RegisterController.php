@@ -4,7 +4,7 @@ class RegisterController
     //Loading REGISTER Controller
     public function registerController()
     {
-        include './lib/validate.php';
+        include_once './lib/validate.php';
         $model = new UserModel();
         if (isset($_POST['register'])) {
             $error = array();
@@ -66,7 +66,7 @@ class RegisterController
                 }   
             }
         }
-        include './View/register.php';
+        include_once './View/register.php';
     }
 }
 ?>

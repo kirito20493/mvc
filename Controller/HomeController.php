@@ -3,7 +3,7 @@ class HomeController
 {
     public function homeController()
     {
-        include './lib/validate.php';
+        include_once './lib/validate.php';
         $action = isset($_GET['action'])?$_GET['action']:'index';
         $error = array();
         switch ($action) {
@@ -29,7 +29,7 @@ class HomeController
     public function showInfor()
     {
         if(isset($_SESSION['username']) && isset($_SESSION['password'])){
-            include './View/home/index.php';
+            include_once './View/home/index.php';
         } else {
             header('Location: index.php?controller=login');
         }
@@ -69,7 +69,7 @@ class HomeController
                 header('Location: index.php?controller=home');
             }
         }
-        include './View/home/changePassword.php';
+        include_once './View/home/changePassword.php';
     }
     //hàm thay đổi email
     public function changeEmail()
@@ -96,7 +96,7 @@ class HomeController
                 header('Location: index.php?controller=home');
             }
         }
-        include './View/home/changeEmail.php';
+        include_once './View/home/changeEmail.php';
     }
 }
 ?>

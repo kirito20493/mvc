@@ -26,7 +26,7 @@ class LoginController{
                 }
             }
         }
-        include './View/login.php';
+        include_once './View/login.php';
     }
 }
 ?>
